@@ -1,0 +1,182 @@
+from turtle import rt, st
+from riotwatcher import LolWatcher, ApiError
+import pandas as pd
+from bs4 import BeautifulSoup
+import requests
+from tkinter import *
+import webbrowser
+from time import sleep
+from tkinter import Tk
+from tqdm import tqdm
+from wakepy import keepawake
+
+# golbal variables
+api_key = 'RGAPI-01777209-f4d6-4278-9950-e5bccbeefdec'
+watcher = LolWatcher(api_key)
+my_region = 'na1'
+
+# me: tUsIcXnShr_aQJoeR5Gxxb8YzlzWYjDFbUVDCcWiHIPvmzlIxtHSc0Y-JFS3YF73it2I0CUICEFNPw
+
+master = watcher.league.entries(my_region, 'RANKED_SOLO_5x5', 'PLATINUM', 'II')
+my_matches = []
+for i in range(10):
+    sid = master[i]['summonerId']
+    puuid = watcher.summoner.by_id(my_region, sid)['puuid']
+    temp = watcher.match.matchlist_by_puuid(my_region, puuid, queue=420, count=100)
+    for match in temp:
+        my_matches.append(match)
+
+blueTops = []
+blueJngs = []
+blueMids = []
+blueBots = []
+blueSups = []
+
+redTops = []
+redJngs = []
+redMids = []
+redBots = []
+redSups = []
+
+btmp = []
+bjmp = []
+bmmp = []
+bbmp = []
+bsmp = []
+rtmp = []
+rjmp = []
+rmmp = []
+rbmp = []
+rsmp = []
+mps = [btmp, bjmp, bmmp, bbmp, bsmp, rtmp, rjmp, rmmp, rbmp, rsmp]
+
+btwr = []
+bjwr = []
+bmwr = []
+bbwr = []
+bswr = []
+rtwr = []
+rjwr = []
+rmwr = []
+rbwr = []
+rswr = []
+wrs = [btwr, bjwr, bmwr, bbwr, bswr, rtwr, rjwr, rmwr, rbwr, rswr]
+
+btt = []
+bjt = []
+bmt = []
+bbt = []
+bst = []
+rtt = []
+rjt = []
+rmt = []
+rbt = []
+rst = []
+ts = [btt, bjt, bmt, bbt, bst, rtt, rjt, rmt, rbt, rst]
+
+winner = []
+d = {'blueTops' : blueTops, 'btmp': btmp,'btwr': btwr,'btt': btt,'blueJngs': blueJngs, 'bjmp': bjmp,'bjwr': bjwr,'bjt': bjt,'blueMids': blueMids, 'bmmp': bmmp,'bmwr': bmwr,'bmt': bmt,'blueBots': blueBots, 'bbmp': bbmp,'bbwr': bbwr,'bbt': bbt,'blueSups': blueSups, 'bsmp': bsmp,'bswr': bswr,'bst': bst,'redTops': redTops, 'rtmp': rtmp,'rtwr': rtwr,'rtt': rtt,'redJngs': redJngs, 'rjmp': rjmp,'rjwr': rjwr,'rjt': rjt,'redMids': redMids, 'rmmp': rmmp,'rmwr': rmwr,'rmt': rmt,'redBots': redBots, 'rbmp': rbmp,'rbwr': rbwr,'rbt': rbt,'redSups': redSups, 'rsmp': rsmp,'rswr': rswr,'rst': rst,'winner': winner}
+
+df = pd.DataFrame(d)
+# fetch last match detail
+with keepawake(keep_screen_awake=True):
+    
+    for matchID in tqdm(my_matches, miniters=1000):
+        bt = ""
+        bj = ""
+        bm = ""
+        bb = ""
+        bs = ""
+        rt = ""
+        rj = ""
+        rm = ""
+        rb = ""
+        rs = ""
+        ftmp = -1
+        fjmp = -1
+        fmmp = -1
+        fbmp = -1
+        fsmp = -1
+        etmp = -1
+        ejmp = -1
+        emmp = -1
+        ebmp = -1
+        esmp = -1
+        ms = [ftmp, fjmp, fmmp, fbmp, fsmp, etmp, ejmp, emmp, ebmp, esmp]
+
+        ftwr = 0
+        fjwr = 0
+        fmwr = 0
+        fbwr = 0
+        fswr = 0
+        etwr = 0
+        ejwr = 0
+        emwr = 0
+        ebwr = 0
+        eswr = 0
+        rs = [ftwr, fjwr, fmwr, fbwr, fswr, etwr, ejwr, emwr, ebwr, eswr]
+
+        ftt = -1
+        fjt = -1
+        fmt = -1
+        fbt = -1
+        fst = -1
+        ett = -1
+        ejt = -1
+        emt = -1
+        ebt = -1
+        est = -1
+        t = [ftt, fjt, fmt, fbt, fst, ett, ejt, emt, ebt, est]
+        winnerNow = 0
+        try:
+            match_detail = watcher.match.by_id(my_region, matchID)
+            details = match_detail['info']['participants']
+            bt = details[0]['championName']
+            bj = details[1]['championName']
+            bm = details[2]['championName']
+            bb = details[3]['championName']
+            bs = details[4]['championName']
+            rt = details[5]['championName']
+            rj = details[6]['championName']
+            rm = details[7]['championName']
+            rb = details[8]['championName']
+            rs = details[9]['championName']
+            for i in range(10):
+                player = details[i]['puuid']
+                champ = details[i]['championId']
+                wins = 0
+                total = 0
+                playerID = details[i]['summonerId']
+                name = details[i]['summonerName']
+                mastery = watcher.champion_mastery.by_summoner_by_champion(my_region, playerID, champ)['championPoints']
+                ms[i] = mastery
+                url = 'https://na.op.gg/summoners/na/' + name
+                headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Mobile Safari/537.36'}
+                try:
+                    source = requests.get(url, headers=headers).text
+                    soup = BeautifulSoup(source, "html.parser")
+                    wr = soup.find('body').find("div", {"id": "__next"}).find("div", {"class": "css-1kj5las eioz3421"}).find("div", {"class": "league-stats"}).find("div", {"class": "css-chm1ih e1x14w4w0"}).find("div", {"class": "win-lose"}).getText()
+                    wr = str(wr).replace("\t", "")
+                    wrInt = int(wr[-3:-1])
+                    total = int(wr[0: str(wr).find('W')]) + int(wr[str(wr).find('W') + 2: str(wr).find('L')])
+                    rs[i] = wrInt
+                    t[i] = total
+                except:
+                    rs[i] = -1
+                    t[i] = -1
+            win = match_detail['info']['participants'][0]['win']
+            if (win == True):
+                winnerNow = 1
+            else:
+                winnerNow = 0
+            new_row = {'blueTops' : bt, 'btmp': ftmp,'btwr': ftwr,'btt': ftt,'blueJngs': bj, 'bjmp': fjmp,'bjwr': fjwr,'bjt': bjt,'blueMids': bm, 'bmmp': fmmp,'bmwr': fmwr,'bmt': fmt,'blueBots': bb, 'bbmp': fbmp,'bbwr': fbwr,'bbt': fbt,'blueSups': bs, 'bsmp': fsmp,'bswr': fswr,'bst': fst,'redTops': rt, 'rtmp': etmp,'rtwr': etwr,'rtt': ett,'redJngs': rj, 'rjmp': ejmp,'rjwr': ejwr,'rjt': ejt,'redMids': rm, 'rmmp': emmp,'rmwr': emwr,'rmt': emt,'redBots': rb, 'rbmp': ebmp,'rbwr': ebwr,'rbt': ebt,'redSups': rs, 'rsmp': esmp,'rswr': eswr,'rst': est,'winner': winnerNow}
+            df = df.append(new_row, ignore_index=True)
+        except:
+            sleep(30)
+        
+
+
+    
+    print(df)
+    df.to_csv('LeagueMatches2.csv')
+
